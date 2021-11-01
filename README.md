@@ -297,6 +297,10 @@ bash reproduce.sh {setting_name} {multitask-zero|channel-multitask-zero} 100 64
 bash reproduce.sh {setting_name} {metaicl|channel-metaicl} 100,13,21,42,87 16
 ```
 
+## License
+MetaICL is CC-BY-NC 4.0 licensed.
+
+
 [paper]: https://arxiv.org/abs/2110.15943
 
 
