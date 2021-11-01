@@ -1,3 +1,9 @@
+# Copyright (c) Facebook, Inc. and its affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+
 MD5SUM = {
     "acronym_identification_32_100_dev.tsv": "4626677dacd08d1596b6d160d1f15aa9",
     "acronym_identification_32_100_test.tsv": "d8282be576fc06892edc07f7cc4d8767",

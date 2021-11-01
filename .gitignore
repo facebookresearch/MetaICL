@@ -27,7 +27,7 @@ Makefile
 *track*
 */*track*
 
-my*.sh
+my*
 *.zip
 *.pkl
 *.jsonl
