@@ -79,7 +79,7 @@ train_data = [{"input": INPUT_1, "output": OUTPUT_1},
               {"input": INPUT_K, "output": OUTPUT_K}]
 ```
 
-If you prefer, you can download our training data by running the command `python -m utils.download_data --demo_data` then loading the downloaded file as follows.
+If you prefer, you can download our training data by running the command `python -m utils.download --demo_data` then loading the downloaded file as follows.
 ```python
 with open("data/financial_phrasebank/financial_phrasebank_16_100_train.jsonl", "r") as f:
     train_data = []
