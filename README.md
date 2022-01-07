@@ -19,9 +19,7 @@ All methods used in the paper are available in this repo (please see the below t
 </p>
 
 
-**Updates**
-
-- 01/10/2022: Our code and checkpoints have been updated with a better preprocessing (using newlines instead of spaces), which improves the performance by 1--4%. If you have downloaded checkpoints prior to 01/10/2022, make sure to re-download checkpoints and use the updated code. Stay tuned for the updated paper with more details and updated results. You can find the brief summary of the updated results in the [Result section](#results) of this README.
+**Updates on 01/10/2022**: Our code and checkpoints have been updated with a better preprocessing (using newlines instead of spaces, and removing BOS and EOS), which improves the performance by 1--4%. If you have downloaded checkpoints prior to 01/10/2022, make sure to re-download checkpoints and use the updated code. Stay tuned for the updated paper with more details and updated results. You can find the brief summary of the updated results in the [Result section](#results) of this README.
 
 
 For any questions about the paper or the code, please contact the first author ([email](mailto:cs.washington.edu)) or leave issues.
@@ -279,21 +277,21 @@ Here is the summary of key results. Full results can be found in the paper.
 
 | Method | `hr_to_lr` | `class_to_class` | `non_class_to_class` | `qa_to_qa` | `non_qa_to_qa` | `non_nli_to_nli` | `non_paraphrase_to_paraphrase` |
 |---|---|---|---|---|---|---|---|
-| 0-shot     | 34.9 | 34.0 | 34.0 | 39.9 | 39.9 | 25.7 | 36.5 |
-| PMI 0-shot | 36.1 | 34.9 | 34.9 | 37.7 | 37.7 | 36.6 | 35.0 |
-| Channel 0-shot |40.0|42.4| 42.4 | 40.4 | 40.4 | 31.4 | 37.3 |
-| In-context         | 36.5/34.7 | 36.0/33.2 | 36.0/33.2 | 39.6/38.4 | 39.6/38.4 | 26.4/25.6 | 33.1/33.1 |
-| PMI In-context     | 36.3/30.4 | 32.4/23.0 | 32.4/23.0 | 37.6/36.4 | 37.6/36.4 | 32.6/27.8 | 34.0/32.9 |
-| Channel In-context | 42.0/36.9 | 45.2/38.4 | 45.2/38.4 | 40.2/37.6 | 40.2/37.6 | 39.4/33.3 | 44.4/41.7 |
-| Multi-task 0-shot         | 41.9 | 37.4 | 36.9 | **45.3** | 35.6 | 42.4 | 36.7 |
-| Channel Multi-task 0-shot | 38.9 | 42.6 | 42.7 | 41.4 | 35.8 | 39.0 | 47.2 |
-| MetaICL         | 45.6/43.1 | 43.7/40.1 | 38.1/33.7 | 43.4/41.7 | 38.5/37.0 | **51.4**/48.1 | 35.1/33.2 |
-| Channel MetaICL | **47.0**/43.0 | **47.1**/42.9 | **45.8**/40.9 | 41.2/38.5 | **40.3**/37.5 | 50.7/44.3 | **51.3**/47.9 |
+|0-shot                    |34.9|34.2|34.2|40.4|40.4|25.5|34.2|
+|PMI 0-shot                |34.8|33.2|33.2|40.4|40.4|27.9|39.2|
+|Channel 0-shot            |36.8|37.2|37.2|39.2|39.2|33.9|39.5|
+|In-context          |38.2/35.4|37.4/33.9|37.4/33.9|40.2/38.8|40.2/38.8|34.0/28.3|33.7/33.1|
+|PMI In-context      |38.9/33.3|38.3/29.3|38.3/29.3|40.5/38.9|40.5/38.9|33.0/28.0|38.6/33.4|
+|Channel In-context  |42.9/38.5|46.3/40.6|46.3/40.6|40.5/37.9|40.5/37.9|39.9/34.8|45.4/40.9|
+|Multi-task 0-shot         |35.4|37.3|36.2|45.7|35.8|40.7|30.6|
+|Channel Multi-task 0-shot |38.6|40.8|42.2|42.1|36.5|36.8|35.1|
+|MetaICL             |43.2/41.6|43.4/39.9|38.2/31.8|**45.9**/44.8|38.7/36.9|49.0/44.8|33.1/33.1|
+|Channel MetaICL     |**48.7**/46.4|**50.5**/47.7|**49.9**/47.5|45.0/43.6|**42.1**/40.8|**54.6**/51.9|**52.2**/50.3|
 
 
 Two numbers are computed by taking the average and the worst-case performance per task (macro-F1 for classification tasks and accuracy for others) over five different seeds, and then taking the macro-average over tasks (one number for 0-shot models since they are not dependent to the seed). **Bold** indicates the best average result.
 
-- Note on 01/10/2022: The results are updated from the previous version with a better preprocessing. Updates are not reflected in the paper yet---stay tuned!
+**Updates on 01/10/2022**: The results are updated from the previous version with a better preprocessing. Updates are not reflected in the paper yet---stay tuned!
 
 
 ## Downloading Checkpoints
