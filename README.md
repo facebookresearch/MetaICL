@@ -18,6 +18,12 @@ All methods used in the paper are available in this repo (please see the below t
   <img src="img/methods.png" width="30%" height="30%">
 </p>
 
+
+**Updates**
+
+- 01/10/2022: Our code and checkpoints have been updated with a better preprocessing (using newlines instead of spaces), which improves the performance by 1--4%. If you have downloaded checkpoints prior to 01/10/2022, make sure to re-download checkpoints and use the updated code. Stay tuned for the updated paper with more details and updated results. You can find the brief summary of the updated results in the [Result section](#results) of this README.
+
+
 For any questions about the paper or the code, please contact the first author ([email](mailto:cs.washington.edu)) or leave issues.
 
 If you find our code or paper useful, please cite the paper:
@@ -41,7 +47,8 @@ If you find our code or paper useful, please cite the paper:
     - [How to download and preprocess](#how-to-download-and-preprocess)
 4. [Training](#training)
 5. [Inference](#inference)
-6. [Downloading Checkpoints](#downloading-checkpoints)
+6. [Results](#results)
+7. [Downloading Checkpoints](#downloading-checkpoints)
     - [Simply reproducing all results in the paper](#simply-reproducing-all-results-in-the-paper)
 
 ## Installation
@@ -265,6 +272,29 @@ If you want to run raw LM baselines in the paper, you do not need to specify `--
 - For In-context/PMI In-context/Channel In-context, do the same as above except always adding `--use_demonstrations`
 
 You can use the same `out_dir` for all raw LM baselines if you are using the same GPT2 model, e.g., `checkpoints/raw-gpt2-large`
+
+## Results
+
+Here is the summary of key results. Full results can be found in the paper.
+
+| Method | `hr_to_lr` | `class_to_class` | `non_class_to_class` | `qa_to_qa` | `non_qa_to_qa` | `non_nli_to_nli` | `non_paraphrase_to_paraphrase` |
+|---|---|---|---|---|---|---|---|
+| 0-shot     | 34.9 | 34.0 | 34.0 | 39.9 | 39.9 | 25.7 | 36.5 |
+| PMI 0-shot | 36.1 | 34.9 | 34.9 | 37.7 | 37.7 | 36.6 | 35.0 |
+| Channel 0-shot |40.0|42.4| 42.4 | 40.4 | 40.4 | 31.4 | 37.3 |
+| In-context         | 36.5/34.7 | 36.0/33.2 | 36.0/33.2 | 39.6/38.4 | 39.6/38.4 | 26.4/25.6 | 33.1/33.1 |
+| PMI In-context     | 36.3/30.4 | 32.4/23.0 | 32.4/23.0 | 37.6/36.4 | 37.6/36.4 | 32.6/27.8 | 34.0/32.9 |
+| Channel In-context | 42.0/36.9 | 45.2/38.4 | 45.2/38.4 | 40.2/37.6 | 40.2/37.6 | 39.4/33.3 | 44.4/41.7 |
+| Multi-task 0-shot         | 41.9 | 37.4 | 36.9 | **45.3** | 35.6 | 42.4 | 36.7 |
+| Channel Multi-task 0-shot | 38.9 | 42.6 | 42.7 | 41.4 | 35.8 | 39.0 | 47.2 |
+| MetaICL         | 45.6/43.1 | 43.7/40.1 | 38.1/33.7 | 43.4/41.7 | 38.5/37.0 | **51.4**/48.1 | 35.1/33.2 |
+| Channel MetaICL | **47.0**/43.0 | **47.1**/42.9 | **45.8**/40.9 | 41.2/38.5 | **40.3**/37.5 | 50.7/44.3 | **51.3**/47.9 |
+
+
+Two numbers are computed by taking the average and the worst-case performance per task (macro-F1 for classification tasks and accuracy for others) over five different seeds, and then taking the macro-average over tasks (one number for 0-shot models since they are not dependent to the seed). **Bold** indicates the best average result.
+
+- Note on 01/10/2022: The results are updated from the previous version with a better preprocessing. Updates are not reflected in the paper yet---stay tuned!
+
 
 ## Downloading Checkpoints
 
