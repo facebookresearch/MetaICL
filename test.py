@@ -31,6 +31,7 @@ def main(logger, args):
         tokenizer = GPT2Tokenizer.from_pretrained(args.gpt2)
     else:
         tokenizer = AutoTokenizer.from_pretrained("gpt2")
+    add_newlines = True
 
     ### checkpoint ...
     if not args.do_zeroshot:
@@ -43,6 +44,7 @@ def main(logger, args):
         assert os.path.exists(checkpoint)
     else:
         checkpoint = None
+        add_newlines = args.gpt2=="gpt-j-6B"
     metaicl_model = MetaICLModel(logger, args.out_dir)
 
     if not os.path.exists(args.out_dir):
@@ -106,7 +108,7 @@ def main(logger, args):
                 assert np.all([d["options"]==options for d in curr_dev_data+curr_train_data])
 
             result = run(logger, test_task, metaicl_data, metaicl_model,
-                         curr_train_data, curr_dev_data, seed, checkpoint, is_classification)
+                         curr_train_data, curr_dev_data, seed, checkpoint, is_classification, add_newlines)
 
             if result is None:
                 errors.append("%s/%s" % (test_task, seed))
@@ -124,29 +126,31 @@ def main(logger, args):
 
 
 def run(logger, task, metaicl_data, metaicl_model, train_data, dev_data, seed,
-        checkpoint, is_classification):
+        checkpoint, is_classification, add_newlines):
 
     if args.do_zeroshot:
         split_name = args.split
         if args.is_null:
             split_name += "-null"
         cache_path = os.path.join(args.out_dir,
-                                  "{}-{}-{}{}{}.pkl".format(
+                                  "{}-{}-{}{}{}{}.pkl".format(
                                       task,
                                       split_name,
                                       metaicl_data.method,
                                       "-k={}".format(args.k) if args.use_demonstrations else "",
-                                      "-s={}".format(seed) if args.use_demonstrations else ""))
+                                      "-s={}".format(seed) if args.use_demonstrations else "",
+                                      "" if add_newlines else "-no-newlines"))
     else:
+        assert add_newlines
         cache_path = os.path.join(args.out_dir, "{}-{}-{}{}{}.pkl".format(
                         task,
                         args.split,
                         metaicl_data.method,
                         "-k={}".format(args.k) if args.use_demonstrations else "",
-                        "-s={}".format(seed) if args.use_demonstrations else "",
+                        "-s={}".format(seed) if args.use_demonstrations else ""
                       ))
 
-    metaicl_data.tensorize(train_data, dev_data)
+    metaicl_data.tensorize(train_data, dev_data, add_newlines=add_newlines)
     metaicl_data.print_tensorized_example()
     logger.info(cache_path)
 

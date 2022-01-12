@@ -67,10 +67,11 @@ class MetaICLData(object):
 
     def get_dataloader(self, batch_size, is_training):
         inputs = self.tensorized_inputs
-        if type(inputs["input_ids"])==list:
-            for k, v in inputs.items():
+        for k, v in inputs.items():
+            if type(v)==list:
                 inputs[k] = torch.LongTensor(v)
         shape = inputs["input_ids"].shape
+        self.logger.info(shape)
         for v in inputs.values():
             assert v.shape==shape
         if "labels" in inputs:
@@ -112,25 +113,42 @@ class MetaICLData(object):
 
         return np.mean(f1s)
 
-    def _prepro_each_datapoint(self, dp, is_first=True, is_training=False, for_demonstrations=False):
-        if not is_first:
+    def _prepro_each_datapoint(self, dp, is_first=True, is_training=False, for_demonstrations=False,
+                               add_newlines=True):
+        dp = dp.copy()
+        if add_newlines:
             if self.method=="direct":
-                dp["input"] = " " + dp["input"]
-            elif self.method=="channel":
-                dp["output"] = " " + dp["output"]
+                if not is_first:
+                    dp["input"] = "\n\n\n" + dp["input"]
+                dp["output"] = "\n" + dp["output"]
                 if "options" in dp:
-                    dp["options"] = [" "+opt for opt in dp["options"]]
+                    dp["options"] = ["\n" + opt for opt in dp["options"]]
+            elif self.method=="channel":
+                if not is_first:
+                    dp["output"] = "\n\n\n" + dp["output"]
+                    if "options" in dp:
+                        dp["options"] = ["\n\n\n" + opt for opt in dp["options"]]
+                dp["input"] = "\n" + dp["input"]
             else:
                 raise NotImplementedError()
-
-        if self.method=="direct":
-            dp["output"] = " " + dp["output"]
-            if "options" in dp:
-                dp["options"] = [" " + opt for opt in dp["options"]]
-        elif self.method=="channel":
-            dp["input"] = " " + dp["input"]
         else:
-            raise NotImplementedError()
+            if not is_first:
+                if self.method=="direct":
+                    dp["input"] = " " + dp["input"]
+                elif self.method=="channel":
+                    dp["output"] = " " + dp["output"]
+                    if "options" in dp:
+                        dp["options"] = [" "+opt for opt in dp["options"]]
+                else:
+                    raise NotImplementedError()
+            if self.method=="direct":
+                dp["output"] = " " + dp["output"]
+                if "options" in dp:
+                    dp["options"] = [" " + opt for opt in dp["options"]]
+            elif self.method=="channel":
+                dp["input"] = " " + dp["input"]
+            else:
+                raise NotImplementedError()
 
         input_tokens = self.tokenizer(dp["input"])["input_ids"]
 
@@ -246,7 +264,8 @@ class MetaICLData(object):
                     attention_mask=torch.LongTensor(attention_mask),
                     token_type_ids=torch.LongTensor(token_type_ids))
 
-    def tensorize(self, _train_data, _test_data, options=None):
+    def tensorize(self, _train_data, _test_data, options=None,
+                  add_newlines=True):
 
         if options is not None:
             assert np.all([dp["output"] in options for dp in _train_data])
@@ -280,11 +299,14 @@ class MetaICLData(object):
             assert len(train_data)==self.k
             demonstrations = []
             for i, dp in enumerate(train_data):
-                input_, output_ = self._prepro_each_datapoint(dp, is_first=i==0, for_demonstrations=True)
+                input_, output_ = self._prepro_each_datapoint(
+                    dp, is_first=i==0, for_demonstrations=True,
+                    add_newlines=add_newlines)
                 demonstrations += input_ + output_
 
         for dp_idx, dp in enumerate(test_data):
-            inputs, outputs, answer = self._prepro_each_datapoint(dp, is_first=not self.use_demonstrations)
+            inputs, outputs, answer = self._prepro_each_datapoint(
+                dp, is_first=not self.use_demonstrations, add_newlines=add_newlines)
 
             indices = [[i] for i in range(len(input_ids), len(input_ids)+len(inputs))]
 
@@ -333,9 +355,17 @@ class MetaICLData(object):
                             "and then run training command again")
                 raise NotImplementedError()
 
-            assert 0<=self.local_rank<self.n_gpu
-            with open(tensorize_path % self.local_rank, "rb") as f:
-                inputs = pkl.load(f)
+            if self.local_rank==-1:
+                inputs = defaultdict(list)
+                for i in range(self.n_gpu):
+                    with open(tensorize_path % i, "rb") as f:
+                        curr_inputs = pkl.load(f)
+                    for k, v in curr_inputs.items():
+                        inputs[k] += v
+            else:
+                assert 0<=self.local_rank<self.n_gpu
+                with open(tensorize_path % self.local_rank, "rb") as f:
+                    inputs = pkl.load(f)
 
             self.tensorized_inputs = inputs
             return
@@ -344,17 +374,23 @@ class MetaICLData(object):
         if any([os.path.exists(_path) for _path in all_tensorize_paths]):
             self.logger.info("tensorize file already exists...")
             return
+
+        unique_task_names = set([dp["task"] for dp in train_data])
         sharded_inputs = []
-        if self.use_demonstrations:
+        if self.use_demonstrations or (len(unique_task_names)>200 and len(train_data)>=1638400):
             tot = 0
-            unique_task_names = set([dp["task"] for dp in train_data])
             for i, curr_train_task in enumerate(unique_task_names):
                 curr_train_data = [dp for dp in train_data if dp["task"]==curr_train_task]
                 tot += len(curr_train_data)
-                if len(unique_task_names)>200 and len(train_data)>=1638400:
-                    # data is too huge; sampling 25% of the data
-                    self.logger.info("Sampling training data from %d to %d", len(curr_train_data), len(curr_train_data)//4)
-                    indices = np.random.permutation(range(len(curr_train_data)))[:len(curr_train_data)//4]
+                if self.use_demonstrations and len(unique_task_names)>200 and len(train_data)>=1638400:
+                    # data is too huge; sampling 10% of the data
+                    self.logger.info("Sampling training data from %d to %d", len(curr_train_data), len(curr_train_data)//10)
+                    indices = np.random.permutation(range(len(curr_train_data)))[:len(curr_train_data)//10]
+                    curr_train_data = [curr_train_data[i] for i in indices]
+                elif len(unique_task_names)>200 and len(train_data)>=1638400:
+                    # data is too huge; sampling 50% of the data
+                    self.logger.info("Sampling training data from %d to %d", len(curr_train_data), len(curr_train_data)//2)
+                    indices = np.random.permutation(range(len(curr_train_data)))[:len(curr_train_data)//2]
                     curr_train_data = [curr_train_data[i] for i in indices]
                 sharded_inputs.append(curr_train_data)
             assert len(train_data)==tot
@@ -394,9 +430,10 @@ class MetaICLData(object):
     def print_tensorized_example(self, return_string=False):
         assert self.tensorized_inputs is not None
 
+        idx = 0
         text = "Checking the first example..."
-        input_ids = self.tensorized_inputs["input_ids"][0]
-        token_type_ids = self.tensorized_inputs["token_type_ids"][0]
+        input_ids = self.tensorized_inputs["input_ids"][idx]
+        token_type_ids = self.tensorized_inputs["token_type_ids"][idx]
         if type(input_ids)!=list:
             input_ids = input_ids.numpy().tolist()
         if type(token_type_ids)!=list:
@@ -413,15 +450,14 @@ class MetaICLData(object):
         if self.local_rank<=0:
             self.logger.info(text)
 
-
 def prepro_sentence_pair_single(ids1, ids2, max_length,
                                 bos_token_id, eos_token_id,
                                 allow_truncation=False):
 
-    if bos_token_id is not None:
-        ids1 = [bos_token_id] + ids1
-    if eos_token_id is not None:
-        ids2 = ids2 + [eos_token_id]
+    #if bos_token_id is not None:
+    #    ids1 = [bos_token_id] + ids1
+    #if eos_token_id is not None:
+    #    ids2 = ids2 + [eos_token_id]
     if allow_truncation and len(ids1)+len(ids2) > max_length:
         ids1 = ids1[len(ids1)+len(ids2)-max_length:] # len = max_length-len(ids2)
         assert len(ids1)+len(ids2)==max_length
