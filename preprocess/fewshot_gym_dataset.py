@@ -105,8 +105,9 @@ class FewshotGymDataset():
                 prefix = os.path.join(path, self.hf_identifier,
                                       "{}_{}_{}".format(self.hf_identifier, k, seed))
                 self.write(k_shot_train, prefix + "_train.jsonl")
-                self.write(k_shot_dev, prefix + "_dev.jsonl")
-                self.write(k_shot_test, prefix + "_test.jsonl")
+                if do_test:
+                    self.write(k_shot_dev, prefix + "_dev.jsonl")
+                    self.write(k_shot_test, prefix + "_test.jsonl")
 
     def write(self, lst, out_file):
         with open(out_file, "w") as fout:
