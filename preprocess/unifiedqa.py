@@ -13,7 +13,7 @@ import argparse
 
 from tqdm import tqdm
 
-from utils import normalize_answer, download_file
+from utils import normalize_answer, download_from_google_drive
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -34,7 +34,7 @@ def main():
     args = parse_args()
 
     if not os.path.exists(os.path.join(args.data_dir, "unifiedqa.zip")):
-        download_file("1fybWU3eeN1jwFPuNa13JrLHzl5NGcYfB", os.path.join(args.data_dir, "unifiedqa.zip"))
+        download_from_google_drive("1fybWU3eeN1jwFPuNa13JrLHzl5NGcYfB", os.path.join(args.data_dir, "unifiedqa.zip"))
 
     with open("../config/qa_to_qa.json", "r") as f:
         config = json.load(f)
