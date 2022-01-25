@@ -30,7 +30,7 @@ def load_data(task, split, k, seed=0, config_split=None, datasets=None,
             for line in f:
                 dp = json.loads(line)
                 if is_null:
-                    dp["input"] = ""
+                    dp["input"] = "N/A"
                 data.append(dp)
     return data
 
