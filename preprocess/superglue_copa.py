@@ -17,20 +17,33 @@ class Superglue_COPA(FewshotGymTextToTextDataset):
         self.task_type = "text to text"
         self.license = "unknown"
 
-    def get_choices_and_answer_string(self, datapoint):
+    def get_choices_and_answer_string(self, datapoint, output_prefix):
         answer_index = datapoint["label"]
-        choices_string = " (A) " + datapoint["choice1"] + " (B) " + datapoint["choice2"]
+        choice1 = output_prefix + datapoint["choice1"]
+        choice2 = output_prefix + datapoint["choice2"]
+        choices_string = " (A) " + choice1 + " (B) " + choice2
         if answer_index == 0:
-            answer_string = datapoint["choice1"]
+            answer_string = choice1
         else:
-            answer_string = datapoint["choice2"]
+            answer_string = choice2
         return choices_string, answer_string
 
     def map_hf_dataset_to_list(self, hf_dataset, split_name):
         lines = []
         for datapoint in hf_dataset[split_name]:
-            choices_string, answer_string = self.get_choices_and_answer_string(datapoint)
-            lines.append((datapoint["premise"] + choices_string, answer_string))
+            premise = datapoint["premise"].strip()
+            if datapoint["question"]=="cause":
+                input_prefix = "Effect: "
+                output_prefix = "Cause: "
+            elif datapoint["question"]=="effect":
+                input_prefix = "Cause: "
+                output_prefix = "Effect: "
+            else:
+                raise NotImplementedError()
+            premise = input_prefix + premise
+            choices_string, answer_string = self.get_choices_and_answer_string(datapoint, output_prefix)
+
+            lines.append((premise + choices_string, answer_string))
         return lines
 
     def load_dataset(self):
