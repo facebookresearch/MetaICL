@@ -19,6 +19,7 @@ All methods used in the paper are available in this repo (please see the below t
 </p>
 
 
+**Updates on 02/25/2022**: Our code has been updated in minor changes with (1) better preprocessing for poem_sentiment and superglue-copa datasets, and (2) some utilities added (specify `--dataset` for a single dataset experiment or for custom dataset).
 **Updates on 01/10/2022**: Our code and checkpoints have been updated with a better preprocessing (using newlines instead of spaces, and removing BOS and EOS), which improves the performance by 1--4%. If you have downloaded checkpoints prior to 01/10/2022, make sure to re-download checkpoints and use the updated code. Stay tuned for the updated paper with more details and updated results. You can find the brief summary of the updated results in the [Result section](#results) of this README.
 
 
