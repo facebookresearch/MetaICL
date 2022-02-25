@@ -85,11 +85,14 @@ class MetaICLModel(object):
         if checkpoint is not None and checkpoint.startswith("gpt"):
             gpt2 = checkpoint
             checkpoint = None
+        if checkpoint is None and "gpt" not in gpt2:
+            checkpoint = gpt2
+            gpt2 = "gpt2-large"
         if checkpoint is None:
             if gpt2.startswith("gpt2"):
                 model = AutoModelForCausalLM.from_pretrained(gpt2)
-            elif gpt2=="gpt-j-6B":
-                model = AutoModelForCausalLM.from_pretrained("/checkpoint/sewonmin/gpt-j")
+            elif "gpt-j" in gpt2:
+                model = AutoModelForCausalLM.from_pretrained("EleutherAI/gpt-j-6B") #/gpt2)
             else:
                 raise NotImplementedError(checkpoint)
             self.model_name = gpt2
@@ -113,7 +116,6 @@ class MetaICLModel(object):
             state_dict = torch.load(checkpoint)
             model = AutoModelForCausalLM.from_pretrained(gpt2, state_dict=state_dict)
         self.model = model
-
 
     def save(self, step):
         if self.local_rank <= 0:

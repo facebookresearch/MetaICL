@@ -1,1 +1,1 @@
-{"task_type": "classification", "options": ["mixed", "negative", "no_impact", "positive"]}
+{"task_type": "classification", "options": ["negative", "no_impact", "positive"]}

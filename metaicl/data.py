@@ -117,18 +117,26 @@ class MetaICLData(object):
                                add_newlines=True):
         dp = dp.copy()
         if add_newlines:
+            no_label = np.all([option=="" for option in dp["options"]])
+            no_input = dp["input"]==""
             if self.method=="direct":
                 if not is_first:
-                    dp["input"] = "\n\n\n" + dp["input"]
-                dp["output"] = "\n" + dp["output"]
-                if "options" in dp:
-                    dp["options"] = ["\n" + opt for opt in dp["options"]]
+                    if no_input:
+                        dp["input"] = "\n\n" + dp["input"]
+                    else:
+                        dp["input"] = "\n\n\n" + dp["input"]
+                if not no_label:
+                    dp["output"] = "\n" + dp["output"]
+                    if "options" in dp:
+                        dp["options"] = ["\n" + opt for opt in dp["options"]]
             elif self.method=="channel":
                 if not is_first:
                     dp["output"] = "\n\n\n" + dp["output"]
                     if "options" in dp:
                         dp["options"] = ["\n\n\n" + opt for opt in dp["options"]]
-                dp["input"] = "\n" + dp["input"]
+                if not no_input:
+                    if not no_label:
+                        dp["input"] = "\n" + dp["input"]
             else:
                 raise NotImplementedError()
         else:

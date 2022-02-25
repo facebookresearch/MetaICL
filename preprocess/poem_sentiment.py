@@ -22,19 +22,17 @@ class PoemSentiment(FewshotGymClassificationDataset):
             0:"negative",
             1:"positive",
             2:"no_impact",
-            3:"mixed",
+            #3:"mixed", # there is no `mixed` on the test set
         }
 
     def map_hf_dataset_to_list(self, hf_dataset, split_name):
         lines = []
         for datapoint in hf_dataset[split_name]:
             # line[0]: input; line[1]: output
+            if datapoint["label"]==3:
+                assert split_name!="test"
+                continue
             lines.append((datapoint["verse_text"], self.label[datapoint["label"]]))
-            #lines.append(json.dumps({
-            #    "input": datapoint["verse_text"],
-            #    "output": self.label[datapoint["label"]],
-            #    "options": list(self.label.values()}))
-
         return lines
 
     def load_dataset(self):
