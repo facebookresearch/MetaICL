@@ -122,7 +122,7 @@ class MetaICLData(object):
             if self.method=="direct":
                 if not is_first:
                     if no_input:
-                        dp["input"] = "\n" + dp["input"]
+                        dp["input"] = "\n\n" + dp["input"]
                     else:
                         dp["input"] = "\n\n\n" + dp["input"]
                 if not no_label:
@@ -135,9 +135,7 @@ class MetaICLData(object):
                     if "options" in dp:
                         dp["options"] = ["\n\n\n" + opt for opt in dp["options"]]
                 if not no_input:
-                    if no_label:
-                        dp["input"] = "\n\n\n" + dp["input"]
-                    else:
+                    if not no_label:
                         dp["input"] = "\n" + dp["input"]
             else:
                 raise NotImplementedError()

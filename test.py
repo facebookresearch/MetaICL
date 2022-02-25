@@ -114,7 +114,7 @@ def main(logger, args):
             is_classification = config["task_type"]=="classification"
             if is_classification:
                 options = curr_dev_data[0]["options"]
-                assert np.all([d["options"]==options for d in curr_dev_data+curr_train_data])
+                assert np.all([d["options"]==options for d in curr_dev_data])
 
             result = run(logger, test_task, metaicl_data, metaicl_model,
                          curr_train_data, curr_dev_data, seed, checkpoint, is_classification, add_newlines)

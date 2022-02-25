@@ -117,8 +117,6 @@ class MetaICLModel(object):
             model = AutoModelForCausalLM.from_pretrained(gpt2, state_dict=state_dict)
         self.model = model
 
-        self.logger.info(self.model)
-
     def save(self, step):
         if self.local_rank <= 0:
             model_state_dict = {key[7:] if key.startswith("module.") else key: value.cpu()
