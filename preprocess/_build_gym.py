@@ -34,6 +34,9 @@ def parse_args():
     parser.add_argument('--do_test', action='store_true',
                         help="Run 2 tasks per process to test the code")
 
+    parser.add_argument('--train_k', type=int, default=16384, help="k for meta-training tasks")
+    parser.add_argument('--test_k', type=int, default=16, help="k for target tasks")
+
     args = parser.parse_args()
 
     if args.do_train and args.do_test:
@@ -54,7 +57,13 @@ def process_tasks(idx, task_list, args, fail_dict):
     failed_tasks = []
     for task in task_list:
         print("Process {}: Processing {} ...".format(idx, task))
-        command = "python %s%s%s%s" % (task, " --inst" if args.inst else ""," --do_train" if args.do_train else "", " --do_test" if args.do_test else "")
+        command = "python %s%s%s%s --train_k %d --test_k %d" % (
+            task,
+            " --inst" if args.inst else "",
+            " --do_train" if args.do_train else "",
+            " --do_test" if args.do_test else "",
+            args.train_k,
+            args.test_k)
         ret_code = subprocess.run([command], shell=True) # stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))
         if ret_code.returncode != 0:
             print("Process {}: Processing {} ... [Failed]".format(idx, task))

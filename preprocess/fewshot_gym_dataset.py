@@ -21,6 +21,8 @@ parser.add_argument('--do_train', action='store_true',
                     help="Verify the datafiles with pre-computed MD5")
 parser.add_argument('--do_test', action='store_true',
                     help="Run 2 tasks per process to test the code")
+parser.add_argument('--train_k', type=int, default=16384, help="k for meta-training tasks")
+parser.add_argument('--test_k', type=int, default=16, help="k for target tasks")
 
 args = parser.parse_args()
 
@@ -132,9 +134,9 @@ class FewshotGymClassificationDataset(FewshotGymDataset):
         if do_train:
             if seed<100:
                 return None, None, None
-            k = 16384
+            k = args.train_k
         elif do_test:
-            k = 16
+            k = args.test_k
 
         # load dataset
         dataset = self.load_dataset()
@@ -189,9 +191,9 @@ class FewshotGymTextToTextDataset(FewshotGymDataset):
         if do_train:
             if seed<100:
                 return None, None, None
-            k = 16384
+            k = args.train_k
         elif do_test:
-            k = 16
+            k = args.test_k
 
         # load dataset
         dataset = self.load_dataset()

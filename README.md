@@ -187,6 +187,11 @@ python unifiedqa.py --do_train --do_test # skip `--do_train` if you won't run tr
 ```
 By default, preprocessed data is saved at `data/`.
 
+Additional flags:
+- `train_k`: number of examples per task for meta-training tasks (16384 by default)
+- `test_k`: number of examples per task for target tasks (16 by default)
+
+If you want to use values that are different from default ones, please simply add the flag, e.g., `python _build_gym.py --build --n_proc=40 --do_test --test_k 4`.
 
 #### Process instruction version
 The instruction version is for settings using instructions. We use instructions from [BigScience PromptSource][t0-repo]. First, fetch instructions (prompts) from PromptSource by doing the following.
