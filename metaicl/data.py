@@ -237,10 +237,10 @@ class MetaICLData(object):
 
             for dp_idx, dp in enumerate(train_data):
                 for _ in range(N):
-                    demon_indices = _draw_random(len(train_data), self.k, set([dp_idx]))
+                    demo_indices = _draw_random(len(train_data), self.k, set([dp_idx]))
                     inputs = []
-                    for demon_idx, index in enumerate(demon_indices):
-                        if demon_idx==0:
+                    for demo_idx, index in enumerate(demo_indices):
+                        if demo_idx==0:
                             inputs += first_tokenized[index][0] + first_tokenized[index][1]
                         else:
                             inputs += nonfirst_tokenized[index][0] + nonfirst_tokenized[index][1]
@@ -261,6 +261,76 @@ class MetaICLData(object):
                 inputs, outputs = self._prepro_each_datapoint(
                     dp, is_first=True, is_training=True)
 
+                encoded = prepro_sentence_pair_single(
+                    inputs, outputs, self.max_length, bos_token_id, eos_token_id)
+
+                input_ids.append(encoded[0])
+                attention_mask.append(encoded[1])
+                token_type_ids.append(encoded[2])
+
+        return dict(input_ids=torch.LongTensor(input_ids),
+                    attention_mask=torch.LongTensor(attention_mask),
+                    token_type_ids=torch.LongTensor(token_type_ids))
+
+
+    def _tensorize_for_training_with_random_english_words(self, train_data):
+        for dp in train_data:
+            assert type(dp)==dict, ("Each example should be a dictionary", dp)
+            assert "input" in dp and "output" in dp, ("Training example should contain input and output", dp)
+
+        # each datapoint: passage, question, options, output
+        bos_token_id = self.tokenizer.bos_token_id
+        eos_token_id = self.tokenizer.eos_token_id
+
+        input_ids, attention_mask, token_type_ids = [], [], []
+        n_answers = []
+
+        from english_words import english_words_set
+        english_words_set = sorted(english_words_set)
+
+        if self.use_demonstrations:
+            N=1
+            def _draw_random(tot, n, exclude_indices):
+                r = np.random.choice([i for i in range(tot) if i not in exclude_indices])
+                if n==1:
+                    return [r]
+                return [r] + _draw_random(tot, n-1, exclude_indices | set([r]))
+
+            for dp_idx, dp in enumerate(train_data):
+                for _ in range(N):
+                    demo_indices = _draw_random(len(train_data), self.k, set([dp_idx]))
+                    inputs = []
+
+                    # create a mapping
+                    mapping = {option: np.random.choice(english_words_set) for option in dp["options"]}
+
+                    for demo_idx, index in enumerate(demo_indices):
+                        curr_demo_dp = train_data[index].copy()
+                        curr_demo_dp["output"] = mapping[curr_demo_dp["output"]]
+                        curr_demo_dp["options"] = [mapping[o] for o in curr_demo_dp["options"]]
+                        inputs_, outputs_ = self._prepro_each_datapoint(curr_demo_dp, is_first=demo_idx==0, is_training=True)
+                        inputs += inputs_ + outputs_
+                        assert index!=dp_idx
+
+                    curr_dp = dp.copy()
+                    curr_dp["output"] = mapping[curr_dp["output"]]
+                    curr_dp["options"] = [mapping[o] for o in curr_dp["options"]]
+                    inputs_, outputs = self._prepro_each_datapoint(curr_dp, is_first=False, is_training=True)
+                    inputs += inputs_
+                    encoded = prepro_sentence_pair_single(
+                        inputs, outputs, self.max_length, bos_token_id, eos_token_id,
+                        allow_truncation=True)
+                    input_ids.append(encoded[0])
+                    attention_mask.append(encoded[1])
+                    token_type_ids.append(encoded[2])
+        else:
+            for dp in train_data:
+                # create a mapping
+                mapping = {option: np.random.choice(english_words_set) for option in dp["options"]}
+                dp["output"] = mapping[dp["output"]]
+                dp["options"] = [mapping[o] for o in dp["options"]]
+                inputs, outputs = self._prepro_each_datapoint(
+                    dp, is_first=True, is_training=True)
                 encoded = prepro_sentence_pair_single(
                     inputs, outputs, self.max_length, bos_token_id, eos_token_id)
 
@@ -337,7 +407,7 @@ class MetaICLData(object):
                                       token_type_ids=torch.LongTensor(token_type_ids))
         self.metadata = metadata
 
-    def tensorize_for_training(self, train_data, keyword, seed):
+    def tensorize_for_training(self, train_data, keyword, seed, use_random_english_words=False):
         assert self.tensorize_dir is not None
 
         if not os.path.exists(self.tensorize_dir):
@@ -346,10 +416,12 @@ class MetaICLData(object):
         method_name = self.method + "-demon" if self.use_demonstrations else self.method
         k_name = "%d-%d" % (len(train_data), self.k) if self.use_demonstrations else len(train_data)
         length_name = "%d-%d" % (self.max_length, self.max_length_per_example) if self.use_demonstrations else self.max_length
+        postfix = "-randomEnglish" if use_random_english_words else ""
 
         tensorize_path = os.path.join(self.tensorize_dir,
-                                      "{}_{}_k={}_seed={}_length={}-rank=%d.pkl".format(
-                                          keyword, method_name, k_name, seed, length_name))
+                                      "{}_{}_k={}_seed={}_length={}{}-rank=%d.pkl".format(
+                                          keyword, method_name, k_name, seed, length_name,
+                                          postfix))
 
         if self.local_rank==-1:
             self.logger.info(tensorize_path)
@@ -408,14 +480,16 @@ class MetaICLData(object):
                 sharded_inputs.append(train_data[i*n_per_shard:(i+1)*n_per_shard])
 
         inputs = {"input_ids": [], "attention_mask": [], "token_type_ids": []}
+        _tensorize_for_training = self._tensorize_for_training_with_random_english_words \
+            if use_random_english_words else self._tensorize_for_training
         if self.n_process==1:
             for in_ in sharded_inputs:
-                out = self._tensorize_for_training(in_)
+                out = _tensorize_for_training(in_)
                 for key in ["input_ids", "attention_mask", "token_type_ids"]:
                     inputs[key] += out[key].numpy().tolist()
         else:
             with Pool(self.n_process) as p:
-                for out in p.imap_unordered(self._tensorize_for_training, sharded_inputs):
+                for out in p.imap_unordered(_tensorize_for_training, sharded_inputs):
                     for key in ["input_ids", "attention_mask", "token_type_ids"]:
                         inputs[key] += out[key].numpy().tolist()
 

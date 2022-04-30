@@ -57,7 +57,8 @@ def main(logger, args):
                                do_tensorize=args.do_tensorize,
                                tensorize_dir=args.tensorize_dir,
                                n_process=args.n_process, n_gpu=args.n_gpu, local_rank=args.local_rank)
-    metaicl_data.tensorize_for_training(train_data, keyword=args.task, seed=args.seed)
+    metaicl_data.tensorize_for_training(train_data, keyword=args.task, seed=args.seed,
+                                        use_random_english_words=args.use_random_english_words)
 
     if args.do_tensorize:
         return
@@ -71,8 +72,8 @@ def main(logger, args):
         torch.cuda.manual_seed_all(args.train_seed)
 
     num_training_steps = args.num_training_steps
-    save_period = 10000
-    log_period = 10000
+    save_period = 5000
+    log_period = 5000
 
     if args.no_masking:
         metaicl_data.tensorized_inputs["token_type_ids"] = torch.ones_like(metaicl_data.tensorized_inputs["input_ids"])
@@ -80,7 +81,7 @@ def main(logger, args):
 
     logger.info(args.out_dir)
 
-    if not os.path.exists(args.out_dir):
+    if args.local_rank<=0 and not os.path.exists(args.out_dir):
         os.makedirs(args.out_dir)
 
     metaicl_model = MetaICLModel(logger, args.out_dir, args.fp16, args.local_rank)
@@ -115,6 +116,7 @@ if __name__=='__main__':
     parser.add_argument("--init_checkpoint", type=str, default=None)
     parser.add_argument("--weight_decay", type=float, default=0.0)
     parser.add_argument("--no_masking", default=False, action="store_true")
+    parser.add_argument("--use_random_english_words", default=False, action="store_true")
 
     parser.add_argument("--out_dir", type=str, default="checkpoints")
     parser.add_argument("--method", type=str, default="direct", choices=["direct", "channel"])
