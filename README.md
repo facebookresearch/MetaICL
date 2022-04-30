@@ -28,11 +28,11 @@ For any questions about the paper or the code, please contact the first author (
 
 If you find our code or paper useful, please cite the paper:
 ```
-@article{ min2021metaicl,
-    title={ Meta{ICL}: Learning to Learn In Context },
-    author={ Min, Sewon and Lewis, Mike and Zettlemoyer, Luke and Hajishirzi, Hannaneh },
-    journal={ arXiv preprint },
-    year={ 2021 }
+@inproceedings{ min2022metaicl,
+  title={ Meta{ICL}: Learning to Learn In Context },
+  author={ Min, Sewon and Lewis, Mike and Zettlemoyer, Luke and Hajishirzi, Hannaneh },
+  booktitle={ NAACL-HLT },
+  year={ 2022 }
 }
 ```
 <p align="center">
@@ -161,11 +161,11 @@ If you use these data resources, please make sure to cite [CrossFit][crossfit-pa
 ```
 If you use the instruction version, please make sure to cite [the T0 paper][t0-paper].
 ```
-@article{ sanh2021multitask,
+@inproceedings{ sanh2022multitask,
     title={ Multitask Prompted Training Enables Zero-Shot Task Generalization },
     author={ Victor Sanh and Albert Webson and Colin Raffel and Stephen H. Bach and Lintang Sutawika and Zaid Alyafeai and Antoine Chaffin and Arnaud Stiegler and Teven Le Scao and Arun Raja and Manan Dey and M Saiful Bari and Canwen Xu and Urmish Thakker and Shanya Sharma and Eliza Szczechla and Taewoon Kim and Gunjan Chhablani and Nihal Nayak and Debajyoti Datta and Jonathan Chang and Mike Tian-Jian Jiang and Han Wang and Matteo Manica and Sheng Shen and Zheng Xin Yong and Harshit Pandey and Rachel Bawden and Thomas Wang and Trishala Neeraj and Jos Rozen and Abheesht Sharma and Andrea Santilli and Thibault Fevry and Jason Alan Fries and Ryan Teehan and Stella Biderman and Leo Gao and Tali Bers and Thomas Wolf and Alexander M. Rush },
-    journal={ arXiv preprint arXiv:2110.08207 },
-    year={ 2021 }
+    booktitle={ ICLR },
+    year={ 2022 }
 }
 ```
 
@@ -284,16 +284,16 @@ Here is the summary of key results. Full results can be found in the paper.
 
 | Method | `hr_to_lr` | `class_to_class` | `non_class_to_class` | `qa_to_qa` | `non_qa_to_qa` | `non_nli_to_nli` | `non_paraphrase_to_paraphrase` |
 |---|---|---|---|---|---|---|---|
-|0-shot                    |34.9|34.2|34.2|40.4|40.4|25.5|34.2|
-|PMI 0-shot                |34.8|33.2|33.2|40.4|40.4|27.9|39.2|
-|Channel 0-shot            |36.8|37.2|37.2|39.2|39.2|33.9|39.5|
-|In-context          |38.2/35.4|37.4/33.9|37.4/33.9|40.2/38.8|40.2/38.8|34.0/28.3|33.7/33.1|
-|PMI In-context      |38.9/33.3|38.3/29.3|38.3/29.3|40.5/38.9|40.5/38.9|33.0/28.0|38.6/33.4|
-|Channel In-context  |42.9/38.5|46.3/40.6|46.3/40.6|40.5/37.9|40.5/37.9|39.9/34.8|45.4/40.9|
-|Multi-task 0-shot         |35.4|37.3|36.2|45.7|35.8|40.7|30.6|
-|Channel Multi-task 0-shot |38.6|40.8|42.2|42.1|36.5|36.8|35.1|
-|MetaICL             |43.2/41.6|43.4/39.9|38.2/31.8|**45.9**/44.8|38.7/36.9|49.0/44.8|33.1/33.1|
-|Channel MetaICL     |**48.7**/46.4|**50.5**/47.7|**49.9**/47.5|45.0/43.6|**42.1**/40.8|**54.6**/51.9|**52.2**/50.3|
+|0-shot                    |34.8|34.2|34.2|40.2|40.2|25.5|34.2|
+|PMI 0-shot                |35.1|33.8|33.8|40.2|40.2|27.9|39.2|
+|Channel 0-shot            |36.5|37.3|37.3|38.7|38.7|33.9|39.5|
+|In-context          |38.2/35.3|37.4/33.9|37.4/33.9|40.1/38.7|40.1/38.7|34.0/28.3|33.7/33.1|
+|PMI In-context      |39.2/33.7|38.8/30.0|38.8/30.0|40.3/38.8|40.3/38.8|33.0/28.0|38.6/33.4|
+|Channel In-context  |43.1/38.5|46.3/40.3|46.3/40.3|40.8/38.1|40.8/38.1|39.9/34.8|45.4/40.9|
+|Multi-task 0-shot         |35.6|37.3|36.8|45.7|36.0|40.7|30.6|
+|Channel Multi-task 0-shot |38.8|40.9|42.2|42.1|36.4|36.8|35.1|
+|MetaICL             |43.3/41.7|43.4/39.9|38.1/31.8|**46.0**/44.8|38.5/36.8|49.0/44.8|33.1/33.1|
+|Channel MetaICL     |**49.1**/46.8|**50.7**/48.0|**50.6**/48.1|44.9/43.5|**41.9**/40.5|**54.6**/51.9|**52.2**/50.3|
 
 
 Two numbers are computed by taking the average and the worst-case performance per task (macro-F1 for classification tasks and accuracy for others) over five different seeds, and then taking the macro-average over tasks (one number for 0-shot models since they are not dependent to the seed). **Bold** indicates the best average result.
