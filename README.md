@@ -178,6 +178,8 @@ pip install datasets==1.4.0 wget
 ```
 Warning: we found that `datasets==1.4.0` is not compatible with Transformers version we use for training and inference. Please use a separate environement for data preprocessing and model training/inference.
 
+**Updates on 04/15/2023**: We found that a few datasets are not supported anymore with `datasets==1.4.0`. Nonetheless, we found that the results reported in the paper are roughly reproducible with other versions of `datasets` as well (for instance, `2.11.0` which is the most recent version at the moment). If you found other versions of datasets do not reproduce results in the paper, please report it to us.
+
 ```
 cd preprocess
 # preprocess from crossfit
@@ -193,6 +195,8 @@ Additional flags:
 - `test_k`: number of examples per task for target tasks (16 by default)
 
 If you want to use values that are different from default ones, please simply add the flag, e.g., `python _build_gym.py --build --n_proc=40 --do_test --test_k 4`.
+
+**Updates on 04/15/2023**: If some datasets are not supported anymore, the script will print out a list of failed datasets at the end, along with command lines you can re-run to check the error messages.
 
 #### Process instruction version
 The instruction version is for settings using instructions. We use instructions from [BigScience PromptSource][t0-repo]. First, fetch instructions (prompts) from PromptSource by doing the following.
