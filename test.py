@@ -188,7 +188,14 @@ def run(logger, task, metaicl_data, metaicl_model, train_data, dev_data, seed,
         prediction_path = prediction_path.replace(".txt", "-calibrated.txt")
 
     if os.path.exists(prediction_path):
-        return 0
+        with open(prediction_path, "r") as f:
+            predictions = []
+            for line in f:
+                predictions.append(line.strip())
+        groundtruths = [dp["output"] for dp in dev_data]
+        perf = metaicl_data.evaluate(predictions, groundtruths, is_classification)
+        logger.info("Accuracy=%s" % perf)
+        return perf
 
     if os.path.exists(cache_path):
         with open(cache_path, "rb") as f:

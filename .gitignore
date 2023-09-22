@@ -32,3 +32,5 @@ my*
 *.pkl
 *.jsonl
 *.csv
+
+Makefile
